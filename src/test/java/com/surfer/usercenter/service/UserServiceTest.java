@@ -3,6 +3,7 @@ package com.surfer.usercenter.service;
 
 import com.surfer.usercenter.mapper.UserMapper;
 import com.surfer.usercenter.model.domain.User;
+import com.surfer.usercenter.model.request.UserRegisterRequest;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -40,27 +41,29 @@ class UserServiceTest {
 
     @Test
     void userRegister() {
-        String userAccount = "surfer";
-        String userPassword = "123123";
-        String checkPassword = "12345678";
-        long result = userService.userRegister(userAccount, userPassword, checkPassword);
+        UserRegisterRequest userRegisterRequest = new UserRegisterRequest();
+        userRegisterRequest.setUserAccount("surfer");
+        userRegisterRequest.setUserPassword("123123");
+        userRegisterRequest.setCheckPassword("12345678");
+        userRegisterRequest.setPlanetCode("1");
+        long result = userService.userRegister(userRegisterRequest);
         Assertions.assertEquals(-1, result);
-        userAccount = "";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        userRegisterRequest.setUserAccount("");
+        result = userService.userRegister(userRegisterRequest);
         Assertions.assertEquals(-1, result);
-        userAccount = "sur fer";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        userRegisterRequest.setUserAccount("sur fer");
+        result = userService.userRegister(userRegisterRequest);
         Assertions.assertEquals(-1, result);
-        userAccount = "su";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        userRegisterRequest.setUserAccount("su");
+        result = userService.userRegister(userRegisterRequest);
         Assertions.assertEquals(-1, result);
-        userAccount = "surfer12";
-        userPassword = "1233";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        userRegisterRequest.setUserAccount("surfer12");
+        userRegisterRequest.setUserPassword("1233");
+        result = userService.userRegister(userRegisterRequest);
         Assertions.assertEquals(-1, result);
-        userAccount = "surfer123";
-        checkPassword = "123";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        userRegisterRequest.setUserAccount("surfer123");
+        userRegisterRequest.setUserPassword("123");
+        result = userService.userRegister(userRegisterRequest);
         Assertions.assertEquals(-1, result);
     }
 }

@@ -1,15 +1,19 @@
 package com.surfer.usercenter.controller;
 
+import com.surfer.usercenter.common.BaseResponse;
+import com.surfer.usercenter.common.ErrorCode;
+import com.surfer.usercenter.common.ResultUtils;
+import com.surfer.usercenter.exception.BusinessException;
 import com.surfer.usercenter.model.domain.User;
 import com.surfer.usercenter.model.request.UserLoginRequest;
 import com.surfer.usercenter.model.request.UserRegisterRequest;
 import com.surfer.usercenter.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.surfer.usercenter.constant.UserConstant.ADMIN_ROLE;
@@ -28,52 +32,71 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+    public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
-        // 1.校验
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
-            return null;
+        String planetCode = userRegisterRequest.getPlanetCode();
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, planetCode)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
-        return userService.userRegister(userAccount, userPassword, checkPassword);
+        return ResultUtils.success(userService.userRegister(userRegisterRequest));
     }
 
     @PostMapping("/login")
-    public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
         // 1.校验
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
-        return userService.userLogin(userAccount, userPassword, request);
+        return ResultUtils.success(userService.userLogin(userAccount, userPassword, request));
+    }
+
+    @PostMapping("/logout")
+    public BaseResponse<Integer> userLogout(HttpSession session) {
+        if (session == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return ResultUtils.success(userService.userLogout(session));
+    }
+
+    @GetMapping("/current")
+    public BaseResponse<User> getCurrentUser(HttpServletRequest request) {
+        User currentUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        // TODO 校验用户是否合法
+        User user = userService.getById(currentUser.getId());
+        return ResultUtils.success(userService.getSafetyUser(user));
     }
 
     @GetMapping("/search")
-    public List<User> searchUsers(@RequestParam(required = false) String username, HttpServletRequest request) {
+    public BaseResponse<List<User>> searchUsers(@RequestParam(required = false) String username, HttpServletRequest request) {
         // 仅管理员查询
-        if (!isAdmin(request)) {
-            return new ArrayList<>();
+        if (isAdmin(request)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
-        return userService.searchUsers(username);
+        return ResultUtils.success(userService.searchUsers(username));
     }
 
     @PostMapping("/delete")
-    public boolean deleteUser(@RequestBody Long id, HttpServletRequest request) {
-        if (!isAdmin(request)) {
-            return false;
+    public BaseResponse<Boolean> deleteUser(@RequestBody Long id, HttpServletRequest request) {
+        if (isAdmin(request)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         if (id <= 0) {
-            return false;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        return userService.removeById(id);
+        return ResultUtils.success(userService.removeById(id));
     }
 
     /**

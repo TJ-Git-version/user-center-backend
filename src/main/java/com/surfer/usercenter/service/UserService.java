@@ -2,7 +2,9 @@ package com.surfer.usercenter.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.surfer.usercenter.model.domain.User;
+import com.surfer.usercenter.model.request.UserRegisterRequest;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 import java.util.List;
 
@@ -15,12 +17,14 @@ public interface UserService extends IService<User> {
 
     /**
      * 用户注册接口
-     * @param userAccount           账号
-     * @param userPassword          密码
-     * @param checkPassword         校验密码
-     * @return                      返回用户id
+     *
+     * @param userAccount   账号
+     * @param userPassword  密码
+     * @param checkPassword 校验密码
+     * @param planetCode
+     * @return 返回用户id
      */
-    long userRegister(String userAccount, String userPassword, String checkPassword);
+    long userRegister(UserRegisterRequest userRegisterRequest);
 
 
     /**
@@ -45,5 +49,13 @@ public interface UserService extends IService<User> {
      * @return                      用户列表
      */
     List<User> searchUsers(String username);
+
+    /**
+     * 用户注销
+     *
+     * @param session session域
+     * @return
+     */
+    Integer userLogout(HttpSession session);
 
 }
