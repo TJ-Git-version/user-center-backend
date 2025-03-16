@@ -2,7 +2,7 @@ package com.surfer.usercenter.service;
 
 
 import com.surfer.usercenter.mapper.UserMapper;
-import com.surfer.usercenter.model.User;
+import com.surfer.usercenter.model.domain.User;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
