@@ -1,7 +1,7 @@
 server:
   port: 8800
-  servlet:
-    context-path: /api
+#  servlet:
+#    context-path: /api
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
